@@ -28,6 +28,9 @@ from .generation import (
 )
 from .models import (
     GAUDI_WHISPER_ATTENTION_CLASSES,
+    ArcticConfig,
+    ArcticForCausalLM,
+    ArcticTokenizer,
     BaichuanConfig,
     BaichuanForCausalLM,
     BaichuanTokenizer,
@@ -729,3 +732,8 @@ def adapt_transformers_to_gaudi():
     transformers.AutoModelForCausalLM.register(ChatGLMConfig, ChatGLMForConditionalGeneration)
     transformers.AutoModelForSeq2SeqLM.register(ChatGLMConfig, ChatGLMForConditionalGeneration)
     transformers.AutoModelForSequenceClassification.register(ChatGLMConfig, ChatGLMForSequenceClassification)
+
+    transformers.AutoConfig.register("arctic", ArcticConfig)
+    transformers.AutoModelForCausalLM.register(ArcticConfig, ArcticForCausalLM)
+    transformers.AutoTokenizer.register(ArcticConfig, ArcticTokenizer)
+

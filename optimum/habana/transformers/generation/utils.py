@@ -116,6 +116,7 @@ MODELS_OPTIMIZED_WITH_STATIC_SHAPES = [
     "baichuan",
     "deepseek_v2",
     "chatglm",
+    "arctic",
 ]
 
 # Initial generated token index is set to 1 to accomodate SOS (start of string) token.
