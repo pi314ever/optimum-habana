@@ -40,6 +40,8 @@ from .models import (
     DeepseekTokenizerFast,
     DeepseekV2Config,
     DeepseekV2ForCausalLM,
+    DeepseekV3Config,
+    DeepseekV3ForCausalLM,
     Gaudi2Idefics2ImageProcessor,
     GaudiBloomForCausalLM,
     GaudiBloomMLP,
@@ -763,3 +765,6 @@ def adapt_transformers_to_gaudi():
     transformers.models.detr.modeling_detr.DetrLoss.loss_cardinality = gaudi_DetrLoss_loss_cardinality
     transformers.models.detr.modeling_detr.DetrLoss.loss_boxes = gaudi_DetrLoss_loss_boxes
     transformers.models.detr.modeling_detr.DetrLoss.forward = gaudi_DetrLoss_forward
+
+    transformers.AutoConfig.register("deepseek_v3", DeepseekV3Config)
+    transformers.AutoModelForCausalLM.register(DeepseekV3Config, DeepseekV3ForCausalLM)
