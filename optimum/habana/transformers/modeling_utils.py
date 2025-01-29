@@ -768,3 +768,4 @@ def adapt_transformers_to_gaudi():
 
     transformers.AutoConfig.register("deepseek_v3", DeepseekV3Config)
     transformers.AutoModelForCausalLM.register(DeepseekV3Config, DeepseekV3ForCausalLM)
+    transformers.AutoTokenizer.register(DeepseekV3Config, fast_tokenizer_class=transformers.LlamaTokenizerFast)
