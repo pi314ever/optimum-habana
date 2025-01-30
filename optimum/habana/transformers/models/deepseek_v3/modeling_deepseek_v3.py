@@ -55,7 +55,7 @@ from transformers.utils import (
 )
 from transformers.utils.import_utils import is_torch_fx_available
 
-from .configuration_deepseek import DeepseekV3Config
+from .configuration_deepseek_v3 import DeepseekV3Config
 
 try:
     from habana_frameworks.torch.hpex.normalization import FusedRMSNorm
