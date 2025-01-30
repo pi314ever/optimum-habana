@@ -57,6 +57,13 @@ from transformers.utils.import_utils import is_torch_fx_available
 
 from .configuration_deepseek import DeepseekV3Config
 
+try:
+    from habana_frameworks.torch.hpex.normalization import FusedRMSNorm
+
+    print("Using HPU fused kernel for RMSNorm")
+except ImportError:
+    print("Not using HPU fused kernel for RMSNorm")
+    FusedRMSNorm = None
 
 if is_flash_attn_2_available():
     from flash_attn import flash_attn_func, flash_attn_varlen_func
@@ -99,11 +106,24 @@ class DeepseekV3RMSNorm(nn.Module):
         self.variance_epsilon = eps
 
     def forward(self, hidden_states):
-        input_dtype = hidden_states.dtype
-        hidden_states = hidden_states.to(torch.float32)
-        variance = hidden_states.pow(2).mean(-1, keepdim=True)
-        hidden_states = hidden_states * torch.rsqrt(variance + self.variance_epsilon)
-        return self.weight * hidden_states.to(input_dtype)
+        """Copied from https://github.com/huggingface/optimum-habana/blob/4a3a9a8fb256e2a2f76dd8868696d50bf7051890/optimum/habana/transformers/models/deepseek_v2/modeling_deepseek_v2.py#L205"""
+        if hidden_states.device.type == "hpu" and FusedRMSNorm:
+            # mixed dtypes are not good for FusedRMSNorm, both inputs need to have same dtype
+            if hidden_states.dtype != self.weight.dtype:
+                orig_dtype = hidden_states.dtype
+                hidden_states = FusedRMSNorm.apply(
+                    hidden_states.to(self.weight.dtype), self.weight, self.variance_epsilon
+                )
+                return hidden_states.to(orig_dtype)
+            else:
+                hidden_states = FusedRMSNorm.apply(hidden_states, self.weight, self.variance_epsilon)
+                return hidden_states
+        else:
+            input_dtype = hidden_states.dtype
+            hidden_states = hidden_states.to(torch.float32)
+            variance = hidden_states.pow(2).mean(-1, keepdim=True)
+            hidden_states = hidden_states * torch.rsqrt(variance + self.variance_epsilon)
+            return self.weight * hidden_states.to(input_dtype)
 
 
 ALL_LAYERNORM_LAYERS.append(DeepseekV3RMSNorm)
